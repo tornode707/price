@@ -1,1 +1,780 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прайс-лист Аккаунтов и Номеров</title>
+    <style>
+        :root {
+            --bg-color: #0e1621;
+            --card-bg: #17212b;
+            --text-color: #f5f5f5;
+            --text-muted: #808d9a;
+            --accent-color: #2481cc;
+            --accent-hover: #2b96e6;
+            --price-color: #4cd964;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 30px auto;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px;
+            background-color: var(--card-bg);
+            border: 2px solid #24303f;
+            border-radius: 30px;
+            color: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-container input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(36, 129, 204, 0.3);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 1px solid #24303f;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 6px 12px rgba(36, 129, 204, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .star-icon {
+            color: #ffb300;
+            margin-right: 12px;
+            font-size: 1.2rem;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        .server-icon {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00d2ff;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+            box-shadow: 0 0 5px rgba(0, 210, 255, 0.5);
+        }
+
+        .server-icon .line {
+            width: 10px;
+            height: 2px;
+            background-color: #00d2ff;
+            border-radius: 1px;
+        }
+
+        .platform-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-body {
+            margin-bottom: 15px;
+        }
+
+        .count-info {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .count-value {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .price-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .price-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--price-color);
+        }
+
+        .buy-btn {
+            background-color: var(--accent-color);
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        .card:hover .buy-btn {
+            background-color: var(--accent-hover);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Магазин аккаунтов и номеров</h1>
+        <p>Выберите интересующую платформу для покупки</p>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Поиск платформы...">
+    </div>
+
+    <div class="grid-container" id="priceGrid">
+        <div class="no-results" id="noResults">Ничего не найдено</div>
+    </div>
+
+    <script>
+        const rawData = [
+            { name: "Другие платформы", count: "178337894 шт.", price: "22.56 ₽", isOther: true },
+            { name: "Telegram", count: "2154363 шт.", price: "25.29 ₽" },
+            { name: "Claude", count: "2109494 шт.", price: "21.64 ₽" },
+            { name: "Google", count: "3293164 шт.", price: "20.19 ₽" },
+            { name: "Apple", count: "2725116 шт.", price: "18.73 ₽" },
+            { name: "Whatsapp", count: "2060804 шт.", price: "28.92 ₽" },
+            { name: "TikTok/Douyin", count: "4164952 шт.", price: "18.73 ₽" },
+            { name: "Blizzard", count: "1913736 шт.", price: "19.82 ₽" },
+            { name: "PayPal", count: "1673877 шт.", price: "21.64 ₽" },
+            { name: "Яндекс/Uber", count: "3426746 шт.", price: "18.73 ₽" },
+            { name: "Bybit", count: "711964 шт.", price: "25.28 ₽" },
+            { name: "Instagram+Threads", count: "1965935 шт.", price: "19.09 ₽" },
+            { name: "Alipay/Alibaba/1688", count: "2030562 шт.", price: "19.63 ₽" },
+            { name: "OZON", count: "1997176 шт.", price: "23.46 ₽" },
+            { name: "Discord", count: "2523368 шт.", price: "18.73 ₽" },
+            { name: "OpenAI", count: "2232828 шт.", price: "20.57 ₽" },
+            { name: "WeChat", count: "2158690 шт.", price: "22.37 ₽" },
+            { name: "Shopee", count: "3201134 шт.", price: "23.47 ₽" },
+            { name: "Amazon", count: "1998241 шт.", price: "20.55 ₽" },
+            { name: "Wildberries", count: "1992741 шт.", price: "21.64 ₽" },
+            { name: "Вконтакте", count: "3192927 шт.", price: "19.83 ₽" },
+            { name: "facebook", count: "1757678 шт.", price: "19.46 ₽" },
+            { name: "Tinder", count: "3744225 шт.", price: "19.09 ₽" },
+            { name: "Twitch", count: "2758628 шт.", price: "19.09 ₽" },
+            { name: "Steam", count: "2231410 шт.", price: "18.73 ₽" },
+            { name: "T-online", count: "2504 шт.", price: "90.82 ₽" },
+            { name: "SNAI", count: "234622 шт.", price: "96.03 ₽" },
+            { name: "Bunda", count: "48820 шт.", price: "24.55 ₽" },
+            { name: "Cadbury", count: "287353 шт.", price: "23.83 ₽" },
+            { name: "hily", count: "1682997 шт.", price: "22.37 ₽" },
+            { name: "RummyCircle", count: "1009 шт.", price: "23.10 ₽" },
+            { name: "Roblox", count: "1241757 шт.", price: "22.55 ₽" },
+            { name: "HuntTheMouse", count: "1351 шт.", price: "22.55 ₽" },
+            { name: "AsianDating", count: "490368 шт.", price: "22.37 ₽" },
+            { name: "Google Chat", count: "670583 шт.", price: "18.80 ₽" },
+            { name: "ReclameAQUI", count: "885765 шт.", price: "36.20 ₽" },
+            { name: "PagBank", count: "822755 шт.", price: "28.92 ₽" },
+            { name: "UOL Host", count: "896815 шт.", price: "34.75 ₽" },
+            { name: "GMX", count: "1542449 шт.", price: "18.73 ₽" },
+            { name: "Foodora", count: "1406166 шт.", price: "22.37 ₽" },
+            { name: "BPJSTK", count: "69601 шт.", price: "23.36 ₽" },
+            { name: "Zepto", count: "273821 шт.", price: "22.37 ₽" },
+            { name: "Шоколадница", count: "4008 шт.", price: "54.41 ₽" },
+            { name: "Chevron", count: "423422 шт.", price: "79.17 ₽" },
+            { name: "Klarna", count: "883210 шт.", price: "20.91 ₽" },
+            { name: "VIMpay", count: "50422 шт.", price: "25.28 ₽" },
+            { name: "VFS GLOBAL", count: "1532287 шт.", price: "25.28 ₽" },
+            { name: "Rebtel", count: "1187476 шт.", price: "22.01 ₽" },
+            { name: "Greggs", count: "164669 шт.", price: "20.91 ₽" },
+            { name: "Kleinanzeigen", count: "77886 шт.", price: "39.85 ₽" },
+            { name: "High 5 Casino", count: "549618 шт.", price: "25.28 ₽" },
+            { name: "SumUp", count: "115254 шт.", price: "19.10 ₽" },
+            { name: "Karos", count: "6280 шт.", price: "29.65 ₽" },
+            { name: "Wallapop", count: "282801 шт.", price: "28.92 ₽" },
+            { name: "PlayTime", count: "6070 шт.", price: "23.47 ₽" },
+            { name: "FIFGROUP MOBILE CUSTOMER", count: "38961 шт.", price: "22.37 ₽" },
+            { name: "Taptap Send", count: "1374462 шт.", price: "25.28 ₽" },
+            { name: "Ankama", count: "1467157 шт.", price: "22.37 ₽" },
+            { name: "Njuškalo", count: "266208 шт.", price: "25.57 ₽" },
+            { name: "Langit Musik", count: "48845 шт.", price: "23.10 ₽" },
+            { name: "Вплюсе", count: "1164 шт.", price: "31.11 ₽" },
+            { name: "Coca-Cola", count: "1064206 шт.", price: "26.01 ₽" },
+            { name: "X5ID", count: "15876 шт.", price: "19.89 ₽" },
+            { name: "HUD", count: "610607 шт.", price: "23.10 ₽" },
+            { name: "Whatnot", count: "674813 шт.", price: "22.55 ₽" },
+            { name: "MoonPay", count: "1488145 шт.", price: "22.37 ₽" },
+            { name: "Razer", count: "1747599 шт.", price: "21.64 ₽" },
+            { name: "Damai", count: "495880 шт.", price: "23.10 ₽" },
+            { name: "Alignable", count: "548938 шт.", price: "30.38 ₽" },
+            { name: "Ipsos iSay", count: "1302323 шт.", price: "24.55 ₽" },
+            { name: "OKX", count: "1499378 шт.", price: "22.55 ₽" },
+            { name: "HungerStation", count: "172950 шт.", price: "23.10 ₽" },
+            { name: "MiniPay", count: "576960 шт.", price: "23.10 ₽" },
+            { name: "Betflag", count: "6529 шт.", price: "127.23 ₽" },
+            { name: "Yophone", count: "232972 шт.", price: "21.64 ₽" },
+            { name: "Netmarble", count: "15558 шт.", price: "34.75 ₽" },
+            { name: "Casino Plus", count: "9475 шт.", price: "22.37 ₽" },
+            { name: "GoFundMe", count: "1231480 шт.", price: "23.10 ₽" },
+            { name: "Сільпо", count: "519 шт.", price: "50.77 ₽" },
+            { name: "BigBasket", count: "226056 шт.", price: "21.93 ₽" },
+            { name: "SAPO", count: "267151 шт.", price: "23.24 ₽" },
+            { name: "DocuSign", count: "253740 шт.", price: "21.64 ₽" },
+            { name: "Volcengine 火山引擎", count: "75678 шт.", price: "23.10 ₽" },
+            { name: "Big Cash", count: "18006 шт.", price: "36.20 ₽" },
+            { name: "DoneDeal", count: "168216 шт.", price: "22.74 ₽" },
+            { name: "Bitrue", count: "135067 шт.", price: "22.37 ₽" },
+            { name: "OnePay", count: "438933 шт.", price: "23.83 ₽" },
+            { name: "Reddit", count: "259288 шт.", price: "22.37 ₽" },
+            { name: "CROCOBET", count: "1187 шт.", price: "36.20 ₽" },
+            { name: "Happn", count: "1656616 шт.", price: "19.46 ₽" },
+            { name: "Boyaa", count: "37841 шт.", price: "22.73 ₽" },
+            { name: "Greywoods", count: "74475 шт.", price: "23.10 ₽" },
+            { name: "Her", count: "881736 шт.", price: "22.74 ₽" },
+            { name: "Glovo", count: "392098 шт.", price: "21.64 ₽" },
+            { name: "LikeCard", count: "4045 шт.", price: "36.20 ₽" },
+            { name: "TOP", count: "17837 шт.", price: "39.85 ₽" },
+            { name: "ZéDelivery", count: "892704 шт.", price: "25.28 ₽" },
+            { name: "WEBDE", count: "273808 шт.", price: "25.43 ₽" },
+            { name: "Смотрёшка", count: "2351 шт.", price: "21.64 ₽" },
+            { name: "Abastece-aí", count: "57957 шт.", price: "87.18 ₽" },
+            { name: "同程旅行 Tongcheng Travel", count: "265841 шт.", price: "22.55 ₽" },
+            { name: "Quero-Quero PAG", count: "858459 шт.", price: "36.20 ₽" },
+            { name: "Astropay", count: "1053412 шт.", price: "20.18 ₽" },
+            { name: "Sideline", count: "428845 шт.", price: "29.65 ₽" },
+            { name: "360Kredi", count: "49163 шт.", price: "22.74 ₽" },
+            { name: "myBCA", count: "57235 шт.", price: "22.37 ₽" },
+            { name: "汇旺 Huione Pay", count: "66744 шт.", price: "22.74 ₽" },
+            { name: "Burger King", count: "351650 шт.", price: "20.18 ₽" },
+            { name: "Noon", count: "183489 шт.", price: "28.92 ₽" },
+            { name: "GAIL`s Bakery", count: "69108 шт.", price: "22.92 ₽" },
+            { name: "LOTTE Mart", count: "39418 шт.", price: "23.10 ₽" },
+            { name: "Lightning AI", count: "138143 шт.", price: "22.92 ₽" },
+            { name: "BAT", count: "45146 шт.", price: "23.83 ₽" },
+            { name: "Microsoft", count: "3243104 шт.", price: "18.73 ₽" },
+            { name: "Gringo", count: "56971 шт.", price: "36.20 ₽" },
+            { name: "ZUS Coffee", count: "126257 шт.", price: "20.91 ₽" },
+            { name: "Hitnspin", count: "647665 шт.", price: "23.10 ₽" },
+            { name: "WePoker", count: "188790 шт.", price: "22.37 ₽" },
+            { name: "Bitso", count: "897475 шт.", price: "26.74 ₽" },
+            { name: "Oldubil", count: "359216 шт.", price: "25.28 ₽" },
+            { name: "BeBoo", count: "1597518 шт.", price: "25.28 ₽" },
+            { name: "Betano", count: "353423 шт.", price: "22.92 ₽" },
+            { name: "Casino Portugal", count: "5593 шт.", price: "28.92 ₽" },
+            { name: "Fetch", count: "425183 шт.", price: "36.20 ₽" },
+            { name: "Poshmark", count: "1328277 шт.", price: "22.01 ₽" },
+            { name: "IFood", count: "1252967 шт.", price: "25.28 ₽" },
+            { name: "Colombian Cupid", count: "445081 шт.", price: "22.37 ₽" },
+            { name: "Ubisoft", count: "3170585 шт.", price: "20.91 ₽" },
+            { name: "MyValue", count: "38999 шт.", price: "25.28 ₽" },
+            { name: "Atlas Earth", count: "684548 шт.", price: "19.31 ₽" },
+            { name: "WorldRemit", count: "1630515 шт.", price: "19.46 ₽" },
+            { name: "Wolt", count: "1997078 шт.", price: "19.46 ₽" },
+            { name: "Maxim", count: "49458 шт.", price: "20.91 ₽" },
+            { name: "CupidMedia", count: "952355 шт.", price: "23.10 ₽" },
+            { name: "AttaPoll", count: "202755 шт.", price: "23.10 ₽" },
+            { name: "Fawry", count: "96067 шт.", price: "25.28 ₽" },
+            { name: "KeeTa 美团", count: "253677 шт.", price: "22.55 ₽" },
+            { name: "Cita Previa", count: "2194 шт.", price: "54.41 ₽" },
+            { name: "robota.ua", count: "608 шт.", price: "48.58 ₽" },
+            { name: "EMAG", count: "5051 шт.", price: "20.91 ₽" },
+            { name: "2ememain", count: "76290 шт.", price: "23.47 ₽" },
+            { name: "Вчасно", count: "519 шт.", price: "68.97 ₽" },
+            { name: "SwaRail", count: "214 шт.", price: "39.85 ₽" },
+            { name: "Vesseo", count: "18071 шт.", price: "36.20 ₽" },
+            { name: "Starbucks", count: "48510 шт.", price: "20.56 ₽" },
+            { name: "Privalia", count: "897467 шт.", price: "36.20 ₽" },
+            { name: "MeiQFashion", count: "3081 шт.", price: "20.91 ₽" },
+            { name: "Brevo", count: "1292991 шт.", price: "22.37 ₽" },
+            { name: "InfinitePay", count: "846019 шт.", price: "35.66 ₽" },
+            { name: "Bantusaku", count: "49091 шт.", price: "22.55 ₽" },
+            { name: "McDonalds", count: "1936603 шт.", price: "19.75 ₽" },
+            { name: "Dostavista", count: "339559 шт.", price: "23.83 ₽" },
+            { name: "YouDo", count: "1664 шт.", price: "21.28 ₽" },
+            { name: "Zinia", count: "4003 шт.", price: "65.33 ₽" },
+            { name: "Treasury", count: "33558 шт.", price: "22.74 ₽" },
+            { name: "ASVLA", count: "1195 шт.", price: "72.61 ₽" },
+            { name: "Meta", count: "338246 шт.", price: "19.25 ₽" },
+            { name: "Pockit", count: "46455 шт.", price: "25.28 ₽" },
+            { name: "Adverts", count: "167622 шт.", price: "22.74 ₽" },
+            { name: "NutriClub", count: "39543 шт.", price: "23.83 ₽" },
+            { name: "NETELLER", count: "647544 шт.", price: "25.28 ₽" },
+            { name: "AIS PLAY", count: "100355 шт.", price: "21.93 ₽" },
+            { name: "Wise", count: "3125108 шт.", price: "19.10 ₽" },
+            { name: "WeTV", count: "39300 шт.", price: "22.37 ₽" },
+            { name: "Dotz", count: "57611 шт.", price: "32.56 ₽" },
+            { name: "Lyft", count: "1422587 шт.", price: "22.55 ₽" },
+            { name: "Flink", count: "622356 шт.", price: "22.37 ₽" },
+            { name: "AstraPay", count: "169435 шт.", price: "23.10 ₽" },
+            { name: "Prime Opinion", count: "523549 шт.", price: "23.83 ₽" },
+            { name: "Carrefour", count: "280104 шт.", price: "24.70 ₽" },
+            { name: "Outlier", count: "1663455 шт.", price: "22.92 ₽" },
+            { name: "betlive", count: "144206 шт.", price: "30.56 ₽" },
+            { name: "PaddyPower", count: "166928 шт.", price: "23.68 ₽" },
+            { name: "CityMall", count: "828 шт.", price: "20.18 ₽" },
+            { name: "KabanchikUA", count: "551 шт.", price: "61.69 ₽" },
+            { name: "Kaito", count: "970105 шт.", price: "23.10 ₽" },
+            { name: "Brahma", count: "897886 шт.", price: "27.47 ₽" },
+            { name: "WinzoGame", count: "1363743 шт.", price: "21.64 ₽" },
+            { name: "Netease", count: "200986 шт.", price: "21.64 ₽" },
+            { name: "Alchemy", count: "315456 шт.", price: "22.55 ₽" },
+            { name: "FeetFinder", count: "637654 шт.", price: "23.65 ₽" },
+            { name: "Paytm", count: "12834 шт.", price: "24.55 ₽" },
+            { name: "Eneba", count: "388434 шт.", price: "20.91 ₽" },
+            { name: "OkCupid", count: "1626982 шт.", price: "22.37 ₽" },
+            { name: "ArenaPlus", count: "283157 шт.", price: "24.41 ₽" },
+            { name: "C6 Bank", count: "671042 шт.", price: "32.56 ₽" },
+            { name: "This Fate", count: "16513 шт.", price: "119.95 ₽" },
+            { name: "Fups", count: "745 шт.", price: "1303.49 ₽" },
+            { name: "DiDiFood", count: "69135 шт.", price: "22.37 ₽" },
+            { name: "Superbet", count: "4162 шт.", price: "36.85 ₽" },
+            { name: "BIGO LIVE", count: "1955011 шт.", price: "19.09 ₽" },
+            { name: "Uklon", count: "337650 шт.", price: "19.06 ₽" },
+            { name: "myboost", count: "125291 шт.", price: "20.91 ₽" },
+            { name: "Talabat", count: "18075 шт.", price: "20.91 ₽" },
+            { name: "Sendwave", count: "678882 шт.", price: "20.91 ₽" },
+            { name: "YUEWEN 阅文集团", count: "835823 шт.", price: "22.01 ₽" },
+            { name: "Watsons MY", count: "46137 шт.", price: "22.55 ₽" },
+            { name: "Wuling", count: "43879 шт.", price: "22.37 ₽" },
+            { name: "Oskelly", count: "1228 шт.", price: "30.38 ₽" },
+            { name: "Ininal", count: "912 шт.", price: "1110.30 ₽" },
+            { name: "Next", count: "1176227 шт.", price: "31.84 ₽" },
+            { name: "LinkAja", count: "53700 шт.", price: "23.83 ₽" },
+            { name: "Las Vegas Casino", count: "3449 шт.", price: "27.47 ₽" },
+            { name: "Warpcast", count: "622244 шт.", price: "22.92 ₽" },
+            { name: "Zen", count: "51568 шт.", price: "23.83 ₽" },
+            { name: "Disney Plus", count: "323 шт.", price: "72.61 ₽" },
+            { name: "GroupMe", count: "167065 шт.", price: "20.62 ₽" },
+            { name: "Radiate", count: "715187 шт.", price: "23.10 ₽" },
+            { name: "IndiaGold", count: "155784 шт.", price: "19.31 ₽" },
+            { name: "Curve", count: "477799 шт.", price: "22.92 ₽" },
+            { name: "Casa Pariurilor", count: "3473 шт.", price: "26.74 ₽" },
+            { name: "Guthabende", count: "3313 шт.", price: "65.33 ₽" },
+            { name: "Onet", count: "344156 шт.", price: "19.31 ₽" },
+            { name: "paycell", count: "1129102 шт.", price: "20.62 ₽" },
+            { name: "Zilch", count: "46469 шт.", price: "35.04 ₽" },
+            { name: "Tennents", count: "36897 шт.", price: "23.47 ₽" },
+            { name: "Kwai", count: "2321211 шт.", price: "25.28 ₽" },
+            { name: "Ring4", count: "484005 шт.", price: "22.92 ₽" },
+            { name: "Rappi", count: "1347622 шт.", price: "23.10 ₽" },
+            { name: "Astra Otoshop", count: "49233 шт.", price: "20.91 ₽" },
+            { name: "Cryptonow", count: "665449 шт.", price: "25.28 ₽" },
+            { name: "FOOTDISTRICT", count: "239713 ₽", price: "38.39 ₽" },
+            { name: "7-Eleven", count: "472831 шт.", price: "19.10 ₽" },
+            { name: "LOVOO", count: "455765 шт.", price: "23.47 ₽" },
+            { name: "RecargaPay", count: "58242 шт.", price: "30.38 ₽" },
+            { name: "Setel", count: "3385 шт.", price: "23.83 ₽" },
+            { name: "Deliveroo", count: "1688178 шт.", price: "20.18 ₽" },
+            { name: "Publi24", count: "4003 шт.", price: "27.47 ₽" },
+            { name: "Grailed", count: "1174538 шт.", price: "22.01 ₽" },
+            { name: "EscapeFromTarkov", count: "1894145 шт.", price: "20.91 ₽" },
+            { name: "Midnite", count: "856788 шт.", price: "22.92 ₽" },
+            { name: "Move It", count: "11712 шт.", price: "23.83 ₽" },
+            { name: "Gemini", count: "648604 шт.", price: "23.83 ₽" },
+            { name: "ЮMoney", count: "629582 шт.", price: "26.74 ₽" },
+            { name: "Binance", count: "776591 шт.", price: "23.83 ₽" },
+            { name: "Continente", count: "3051 шт.", price: "23.83 ₽" },
+            { name: "Redbubble", count: "698646 шт.", price: "22.01 ₽" },
+            { name: "WalletHub", count: "426723 шт.", price: "30.38 ₽" },
+            { name: "Meesho", count: "338761 шт.", price: "20.18 ₽" },
+            { name: "Indomaret", count: "70787 шт.", price: "24.86 ₽" },
+            { name: "eFood", count: "169045 шт.", price: "22.74 ₽" },
+            { name: "Feels", count: "545918 шт.", price: "19.83 ₽" },
+            { name: "ImmoScout24", count: "9652 шт.", price: "93.00 ₽" },
+            { name: "Pegasus Airlines", count: "123855 шт.", price: "19.10 ₽" },
+            { name: "Shein", count: "1642289 шт.", price: "22.37 ₽" },
+            { name: "Five Surveys", count: "619538 шт.", price: "22.92 ₽" },
+            { name: "Guzman y Gomez", count: "215630 шт.", price: "28.92 ₽" },
+            { name: "KKTIX", count: "65335 шт.", price: "19.25 ₽" },
+            { name: "ClassPass", count: "777739 шт.", price: "22.55 ₽" },
+            { name: "Tala", count: "12239 шт.", price: "22.55 ₽" },
+            { name: "Seated", count: "659438 шт.", price: "22.92 ₽" },
+            { name: "FastMoss", count: "433255 шт.", price: "22.37 ₽" },
+            { name: "Enjoei", count: "895452 шт.", price: "36.20 ₽" },
+            { name: "TheL", count: "475697 шт.", price: "19.10 ₽" },
+            { name: "Cloud.ru", count: "947 шт.", price: "28.92 ₽" },
+            { name: "PLN Mobile", count: "39090 шт.", price: "22.55 ₽" },
+            { name: "UNNI 강남언ни", count: "240582 шт.", price: "21.28 ₽" },
+            { name: "TextFree", count: "429335 шт.", price: "31.11 ₽" },
+            { name: "RIDE", count: "596546 шт.", price: "20.18 ₽" },
+            { name: "Lime", count: "172561 шт.", price: "24.20 ₽" },
+            { name: "MotoRan", count: "49732 шт.", price: "19.10 ₽" },
+            { name: "Firebase", count: "1479138 шт.", price: "22.01 ₽" },
+            { name: "ChargePoint", count: "648965 шт.", price: "22.37 ₽" },
+            { name: "UFC", count: "12177 шт.", price: "22.37 ₽" },
+            { name: "Crystalbet", count: "154657 шт.", price: "30.56 ₽" },
+            { name: "Opera Mini", count: "71178 шт.", price: "19.83 ₽" },
+            { name: "BLINK by BonusLink", count: "2380 шт.", price: "22.73 ₽" },
+            { name: "Stoiximan", count: "52605 шт.", price: "23.10 ₽" },
+            { name: "PlayerAuctions", count: "288400 шт.", price: "22.37 ₽" },
+            { name: "DBS Bank", count: "15846 шт.", price: "79.90 ₽" },
+            { name: "OneForma", count: "1434563 шт.", price: "21.64 ₽" },
+            { name: "FilipinoCupid", count: "58847 шт.", price: "22.37 ₽" },
+            { name: "Shafa", count: "555 шт.", price: "49.31 ₽" },
+            { name: "OPAP", count: "2689 шт.", price: "69.40 ₽" },
+            { name: "Perfect World 完美世界", count: "15417 шт.", price: "105.38 ₽" },
+            { name: "Spark Driver", count: "993787 шт.", price: "31.11 ₽" },
+            { name: "CHECK24", count: "5646 шт.", price: "65.33 ₽" },
+            { name: "Vision Plus", count: "33738 шт.", price: "22.37 ₽" },
+            { name: "Annoncelight", count: "776 шт.", price: "47.13 ₽" },
+            { name: "Bilkraft", count: "3004 шт.", price: "27.47 ₽" },
+            { name: "Ari10", count: "85992 шт.", price: "23.47 ₽" },
+            { name: "AVON", count: "22381 шт.", price: "19.31 ₽" },
+            { name: "VooV Meeting", count: "528626 шт.", price: "21.64 ₽" },
+            { name: "Hey Cash", count: "46680 шт.", price: "23.10 ₽" },
+            { name: "Gopuff", count: "170005 шт.", price: "20.91 ₽" },
+            { name: "My TELUS", count: "51166 шт.", price: "23.10 ₽" },
+            { name: "Dana", count: "68189 шт.", price: "26.57 ₽" },
+            { name: "Tata Neu", count: "125389 шт.", price: "20.91 ₽" },
+            { name: "99acres", count: "792 шт.", price: "21.64 ₽" },
+            { name: "DoorDash", count: "1305796 шт.", price: "18.86 ₽" },
+            { name: "Mycashbacks", count: "3589 шт.", price: "61.69 ₽" },
+            { name: "Suno", count: "262800 шт.", price: "19.46 ₽" },
+            { name: "MChat", count: "4397 шт.", price: "20.56 ₽" },
+            { name: "Upward", count: "494940 шт.", price: "23.10 ₽" },
+            { name: "will", count: "896170 шт.", price: "34.75 ₽" },
+            { name: "myGLO", count: "6598 шт.", price: "27.10 ₽" },
+            { name: "JioMart", count: "125389 шт.", price: "20.91 ₽" },
+            { name: "BetMen", count: "109714 шт.", price: "24.99 ₽" },
+            { name: "roomster", count: "69136 шт.", price: "20.91 ₽" },
+            { name: "2dehands", count: "227629 шт.", price: "20.18 ₽" },
+            { name: "PhonePe", count: "429150 шт.", price: "22.55 ₽" },
+            { name: "Rupiah Cepat", count: "49186 шт.", price: "23.10 ₽" },
+            { name: "Trade Republic", count: "76999 шт.", price: "23.83 ₽" },
+            { name: "AdmiralBet", count: "3425 шт.", price: "29.65 ₽" },
+            { name: "Dott", count: "1174943 шт.", price: "22.37 ₽" },
+            { name: "Dingtone", count: "57094 шт.", price: "23.83 ₽" },
+            { name: "Strato", count: "4048 шт.", price: "50.77 ₽" },
+            { name: "Shopify", count: "716800 шт.", price: "22.92 ₽" },
+            { name: "Bingo Plus", count: "8894 шт.", price: "22.55 ₽" },
+            { name: "Quoka", count: "3054 шт.", price: "39.85 ₽" },
+            { name: "INDOPAKET", count: "33300 шт.", price: "22.37 ₽" },
+            { name: "D4", count: "151477 шт.", price: "23.83 ₽" },
+            { name: "ZeeNow", count: "857948 шт.", price: "36.93 ₽" },
+            { name: "PlayOJO", count: "166809 шт.", price: "21.64 ₽" },
+            { name: "WeTalk", count: "428008 шт.", price: "31.11 ₽" },
+            { name: "COSMOTE", count: "1680 шт.", price: "68.97 ₽" },
+            { name: "Airba Fresh", count: "1210 шт.", price: "27.47 ₽" },
+            { name: "Intel SAP", count: "195769 шт.", price: "23.10 ₽" },
+            { name: "AlFursan", count: "10901 шт.", price: "23.10 ₽" },
+            { name: "Dabble", count: "44156 шт.", price: "23.47 ₽" },
+            { name: "DOKU", count: "39214 шт.", price: "24.86 ₽" },
+            { name: "Voi", count: "180214 шт.", price: "23.83 ₽" },
+            { name: "Botim", count: "281389 шт.", price: "22.37 ₽" },
+            { name: "Bazaraki", count: "1876 шт.", price: "72.61 ₽" },
+            { name: "Chronodrive", count: "2054 шт.", price: "68.97 ₽" },
+            { name: "BAGI", count: "33440 шт.", price: "23.10 ₽" },
+            { name: "Bazos", count: "455489 шт.", price: "19.31 ₽" },
+            { name: "ZUL", count: "18412 шт.", price: "36.20 ₽" },
+            { name: "Fiverr", count: "1818374 шт.", price: "22.55 ₽" },
+            { name: "Mercado", count: "902706 шт.", price: "25.28 ₽" },
+            { name: "Mercari", count: "950356 шт.", price: "30.38 ₽" },
+            { name: "MyGo", count: "33093 шт.", price: "23.10 ₽" },
+            { name: "Gett", count: "1116383 шт.", price: "25.28 ₽" },
+            { name: "IQOS", count: "620171 шт.", price: "18.73 ₽" },
+            { name: "QwikCilver", count: "895 шт.", price: "20.91 ₽" },
+            { name: "Flowwow", count: "168467 шт.", price: "22.74 ₽" },
+            { name: "willhaben", count: "570429 шт.", price: "22.59 ₽" },
+            { name: "eBay", count: "1975877 шт.", price: "20.91 ₽" },
+            { name: "ProtonMail", count: "3686209 шт.", price: "18.73 ₽" },
+            { name: "Zomato", count: "1083 шт.", price: "36.20 ₽" },
+            { name: "Twilio", count: "1100324 шт.", price: "22.55 ₽" },
+            { name: "Nextdoor", count: "1237809 шт.", price: "22.37 ₽" },
+            { name: "Clubhouse", count: "1666549 шт.", price: "18.86 ₽" },
+            { name: "Lalamove", count: "962397 шт.", price: "22.01 ₽" },
+            { name: "BLIBLI", count: "81832 шт.", price: "20.57 ₽" },
+            { name: "GoogleVoice", count: "2480525 шт.", price: "31.66 ₽" },
+            { name: "Ticketmaster", count: "2475763 шт.", price: "24.19 ₽" },
+            { name: "Kwiff", count: "167105 шт.", price: "22.92 ₽" },
+            { name: "Freelancer", count: "1474050 шт.", price: "20.18 ₽" },
+            { name: "Hepsiburadacom", count: "1663162 шт.", price: "21.28 ₽" },
+            { name: "Ukrnet", count: "339483 шт.", price: "19.31 ₽" },
+            { name: "TheFork", count: "970232 шт.", price: "21.64 ₽" },
+            { name: "Neon", count: "1408109 шт.", price: "20.91 ₽" },
+            { name: "Monobank", count: "553 шт.", price: "65.33 ₽" },
+            { name: "kolesa.kz", count: "430865 шт.", price: "19.31 ₽" },
+            { name: "PAC Cash", count: "42702 шт.", price: "23.83 ₽" },
+            { name: "FotoCasa", count: "3659 шт.", price: "75.53 ₽" },
+            { name: "Foody", count: "172509 шт.", price: "20.18 ₽" },
+            { name: "FunPay", count: "2037 шт.", price: "28.92 ₽" },
+            { name: "Gojek", count: "87949 шт.", price: "21.64 ₽" },
+            { name: "Corona", count: "897866 шт.", price: "23.83 ₽" },
+            { name: "CMB", count: "969325 шт.", price: "24.20 ₽" },
+            { name: "Capital One", count: "475113 шт.", price: "23.47 ₽" },
+            { name: "Natura Avon", count: "898055 шт.", price: "34.02 ₽" },
+            { name: "Godrej", count: "48498 шт.", price: "23.83 ₽" },
+            { name: "Upwork", count: "405421 шт.", price: "20.18 ₽" },
+            { name: "Marktplaats", count: "400558 шт.", price: "24.41 ₽" },
+            { name: "Bebeclub", count: "39056 шт.", price: "23.83 ₽" },
+            { name: "GG", count: "32496 шт.", price: "24.63 ₽" },
+            { name: "RedBook", count: "1698832 шт.", price: "19.53 ₽" },
+            { name: "Tencent QQ", count: "3258429 шт.", price: "20.55 ₽" },
+            { name: "Coinbase", count: "3428379 шт.", price: "21.09 ₽" },
+            { name: "Sicredi", count: "848642 шт.", price: "90.82 ₽" },
+            { name: "Tealive", count: "2077 шт.", price: "22.55 ₽" },
+            { name: "shopFarEast", count: "22096 шт.", price: "36.20 ₽" },
+            { name: "BP", count: "50376 шт.", price: "22.55 ₽" },
+            { name: "ASAAS", count: "895270 шт.", price: "35.48 ₽" },
+            { name: "Lotus", count: "221186 шт.", price: "22.01 ₽" },
+            { name: "AGIBANK", count: "1120558 шт.", price: "31.84 ₽" },
+            { name: "Grab", count: "1531685 шт.", price: "19.46 ₽" },
+            { name: "BharatPe", count: "152407 шт.", price: "21.93 ₽" },
+            { name: "TotalPass", count: "886486 шт.", price: "22.74 ₽" },
+            { name: "Shopback", count: "47684 шт.", price: "22.37 ₽" },
+            { name: "Finya", count: "74558 шт.", price: "38.39 ₽" },
+            { name: "ParenTeam", count: "2358 шт.", price: "23.10 ₽" },
+            { name: "Voggt", count: "5621 шт.", price: "54.41 ₽" },
+            { name: "OLX", count: "2537376 шт.", price: "19.09 ₽" },
+            { name: "NCsoft", count: "897801 шт.", price: "22.55 ₽" },
+            { name: "Cabify", count: "11551 шт.", price: "25.28 ₽" },
+            { name: "CaltexGO", count: "2383 шт.", price: "23.83 ₽" },
+            { name: "aiqfome", count: "58141 шт.", price: "34.02 ₽" },
+            { name: "PPC", count: "3504 шт.", price: "27.47 ₽" },
+            { name: "Ozan", count: "168787 шт.", price: "22.55 ₽" },
+            { name: "Square", count: "425962 шт.", price: "30.38 ₽" },
+            { name: "LinkedIN", count: "2203357 шт.", price: "18.73 ₽" },
+            { name: "MosGram", count: "241842 шт.", price: "22.37 ₽" },
+            { name: "Bipa", count: "858851 шт.", price: "34.02 ₽" },
+            { name: "Vinted", count: "1635882 шт.", price: "25.28 ₽" },
+            { name: "Geekay", count: "667214 шт.", price: "22.37 ₽" },
+            { name: "Paysend", count: "1040205 шт.", price: "22.55 ₽" },
+            { name: "BlaBlaCar", count: "1617575 шт.", price: "21.64 ₽" },
+            { name: "IRCTC", count: "348895 шт.", price: "19.31 ₽" },
+            { name: "Weibo", count: "2171978 шт.", price: "19.10 ₽" },
+            { name: "Daki", count: "1003754 шт.", price: "32.56 ₽" },
+            { name: "Nubank", count: "448301 шт.", price: "36.20 ₽" },
+            { name: "Getnet", count: "55706 шт.", price: "36.20 ₽" },
+            { name: "Сбер/Купер", count: "62 шт.", price: "130.23 ₽" },
+            { name: "Lottomatica", count: "232571 шт.", price: "27.47 ₽" },
+            { name: "99app", count: "2002235 шт.", price: "22.55 ₽" },
+            { name: "OffGamers", count: "1282159 шт.", price: "22.37 ₽" },
+            { name: "Seven Bet", count: "3421 шт.", price: "28.19 ₽" },
+            { name: "Salams", count: "621686 шт.", price: "23.46 ₽" },
+            { name: "Dream11", count: "491 шт.", price: "23.10 ₽" },
+            { name: "Skrill", count: "1981344 шт.", price: "21.64 ₽" },
+            { name: "Fore Coffee", count: "38974 шт.", price: "19.46 ₽" },
+            { name: "Match", count: "896034 шт.", price: "32.56 ₽" },
+            { name: "Jeevansathi", count: "718124 шт.", price: "22.37 ₽" },
+            { name: "MEEFF", count: "73591 шт.", price: "22.37 ₽" },
+            { name: "Eleme 饿了么", count: "426617 шт.", price: "23.10 ₽" },
+            { name: "ShellBox", count: "895674 шт.", price: "22.37 ₽" },
+            { name: "Leboncoin", count: "733221 шт.", price: "19.31 ₽" },
+            { name: "Ultragaz", count: "841127 шт.", price: "36.20 ₽" },
+            { name: "Skelbiu", count: "265768 шт.", price: "26.74 ₽" },
+            { name: "Tinkoff VoiceKit", count: "49045 шт.", price: "32.56 ₽" },
+            { name: "Valora", count: "860496 шт.", price: "19.10 ₽" },
+            { name: "PayWell", count: "88402 шт.", price: "36.20 ₽" },
+            { name: "Profee", count: "79004 шт.", price: "23.83 ₽" },
+            { name: "Viber", count: "2720835 шт.", price: "18.73 ₽" },
+            { name: "MotorkuX", count: "73863 шт.", price: "21.28 ₽" },
+            { name: "ДругВокруг", count: "15163 шт.", price: "19.46 ₽" },
+            { name: "LuckyLand Slots", count: "514506 шт.", price: "26.74 ₽" },
+            { name: "All Access", count: "52373 шт.", price: "26.01 ₽" },
+            { name: "Easycash", count: "39705 шт.", price: "25.28 ₽" },
+            { name: "ContiCazino", count: "3390 шт.", price: "28.19 ₽" },
+            { name: "Rozetka", count: "337136 шт.", price: "22.59 ₽" },
+            { name: "Tise", count: "48254 шт.", price: "20.91 ₽" },
+            { name: "GNJOY", count: "4352 шт.", price: "22.37 ₽" },
+            { name: "TanTan", count: "215042 шт.", price: "20.18 ₽" },
+            { name: "Walmart", count: "3352313 шт.", price: "23.46 ₽" },
+            { name: "Feeld", count: "1862907 шт.", price: "18.90 ₽" },
+            { name: "BIP", count: "251933 шт.", price: "20.91 ₽" },
+            { name: "Tokopedia", count: "72110 шт.", price: "22.31 ₽" },
+            { name: "OVO", count: "72239 шт.", price: "20.56 ₽" },
+            { name: "Remitly", count: "565128 шт.", price: "22.92 ₽" },
+            { name: "Ryde", count: "996712 шт.", price: "25.28 ₽" },
+            { name: "Não Me Perturbe", count: "897949 шт.", price: "34.02 ₽" },
+            { name: "Singledk", count: "15550 шт.", price: "38.39 ₽" },
+            { name: "Poparide", count: "550849 шт.", price: "30.38 ₽" },
+            { name: "Itau", count: "493416 шт.", price: "36.93 ₽" },
+            { name: "DiDi", count: "1312593 шт.", price: "19.46 ₽" },
+            { name: "GovBr", count: "891385 шт.", price: "32.56 ₽" },
+            { name: "Лэтуаль", count: "1040 шт.", price: "28.92 ₽" },
+            { name: "Genome", count: "104098 шт.", price: "22.55 ₽" },
+            { name: "Yara Farmcare", count: "48973 шт.", price: "22.37 ₽" },
+            { name: "Datanyze", count: "484820 шт.", price: "31.11 ₽" },
+            { name: "Guiche Web", count: "898029 шт.", price: "36.20 ₽" },
+            { name: "GymPlius", count: "2720 шт.", price: "28.57 ₽" },
+            { name: "Factory", count: "477740 шт.", price: "23.10 ₽" },
+            { name: "Tango", count: "427826 шт.", price: "19.83 ₽" },
+            { name: "JTExpress", count: "47763 шт.", price: "20.18 ₽" },
+            { name: "KakaoTalk", count: "3466983 шт.", price: "23.10 ₽" },
+            { name: "Shpock", count: "181458 шт.", price: "23.10 ₽" },
+            { name: "eToro", count: "1380081 шт.", price: "22.55 ₽" },
+            { name: "Marktde", count: "58889 шт.", price: "22.37 ₽" },
+            { name: "Indosaku", count: "43414 шт.", price: "22.55 ₽" },
+            { name: "Askable", count: "67381 шт.", price: "22.37 ₽" },
+            { name: "GoMoney", count: "203 шт.", price: "41.30 ₽" },
+            { name: "Aukro", count: "168196 шт.", price: "22.92 ₽" },
+            { name: "Lazada", count: "875543 шт.", price: "20.18 ₽" },
+            { name: "Careem", count: "1111445 шт.", price: "20.18 ₽" },
+            { name: "Paysera", count: "1476879 шт.", price: "25.28 ₽" },
+            { name: "Qpon", count: "39281 шт.", price: "22.74 ₽" },
+            { name: "Beebs", count: "56598 шт.", price: "22.74 ₽" },
+            { name: "Hostinger", count: "73311 шт.", price: "25.28 ₽" },
+            { name: "Cloud Manager", count: "245005 шт.", price: "21.64 ₽" },
+            { name: "Bradesco", count: "893272 шт.", price: "39.85 ₽" },
+            { name: "Букмекерские", count: "2517 шт.", price: "32.56 ₽" },
+            { name: "Bumble", count: "1889184 шт.", price: "21.64 ₽" },
+            { name: "NovaPoshta", count: "33884 шт.", price: "50.77 ₽" },
+            { name: "Grupo Madero", count: "18315 шт.", price: "36.20 ₽" },
+            { name: "KeepCalling", count: "15943 шт.", price: "23.83 ₽" },
+            { name: "Yahoo", count: "3803172 шт.", price: "18.73 ₽" },
+            { name: "AlloBank", count: "48496 шт.", price: "22.55 ₽" }
+        ];
+
+        const grid = document.getElementById('priceGrid');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+
+        function generateTgLink(item) {
+            const username = 'liamurphy';
+            let text = '';
+            
+            if (item.isOther) {
+                text = "Привет!\nХочу купить аккаунт/номер на платформу -\nПодскажи цену на эту страну -";
+            } else {
+                text = `Привет! Я хочу купить аккаунт для платформы ${item.name} ; подскажи прайс аккаунтов/номеров для этой платформы!`;
+            }
+            
+            return `https://t.me/${username}?text=${encodeURIComponent(text)}`;
+        }
+
+        function displayCards(data) {
+            const cards = grid.querySelectorAll('.card');
+            cards.forEach(card => card.remove());
+
+            if(data.length === 0) {
+                noResults.style.display = 'block';
+                return;
+            } else {
+                noResults.style.display = 'none';
+            }
+
+            data.forEach(item => {
+                const tgLink = generateTgLink(item);
+                
+                const iconHtml = item.isOther 
+                    ? `<div class="server-icon"><div class="line"></div><div class="line"></div><div class="line"></div></div>`
+                    : `<span class="star-icon">★</span>`;
+                
+                const cardHtml = `
+                    <a href="${tgLink}" target="_blank" class="card" data-name="${item.name.toLowerCase()}">
+                        <div class="card-header">
+                            ${iconHtml}
+                            <div class="platform-name" title="${item.name}">${item.name}</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="count-info">В наличии: <span class="count-value">${item.count}</span></div>
+                        </div>
+                        <div class="card-footer">
+                            <div>
+                                <div class="price-label">Цена от</div>
+                                <div class="price-value">${item.price}</div>
+                            </div>
+                            <div class="buy-btn">Купить</div>
+                        </div>
+                    </a>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        displayCards(rawData);
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const filteredData = rawData.filter(item => item.name.toLowerCase().includes(query));
+            displayCards(filteredData);
+        });
+    </script>
+</body>
+</html>
 
